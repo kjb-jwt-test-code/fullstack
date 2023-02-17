@@ -53,23 +53,42 @@ public class JWTWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception {
-        httpSecurity.csrf().disable().exceptionHandling()
-                .authenticationEntryPoint(jwtUnAuthorizedResponseAuthenticationEntryPoint).and().sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests().anyRequest()
+        httpSecurity.csrf()
+                .disable()
+                .exceptionHandling()
+                .authenticationEntryPoint(jwtUnAuthorizedResponseAuthenticationEntryPoint)
+                .and()
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+
+                .authorizeRequests()
+                .antMatchers("/api/authenticate")
+                .permitAll()
+
+                .anyRequest()
                 .authenticated();
 
         httpSecurity.addFilterBefore(jwtTokenAuthorizationOncePerRequestFilter,
                 UsernamePasswordAuthenticationFilter.class);
 
-        httpSecurity.headers().frameOptions().sameOrigin() // H2 Console Needs this setting
+        httpSecurity.headers()
+                .frameOptions()
+                .sameOrigin() // H2 Console Needs this setting
                 .cacheControl(); // disable caching
     }
 
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
-        webSecurity.ignoring().antMatchers(HttpMethod.POST, authenticationPath).antMatchers(HttpMethod.OPTIONS, "/**")
-                .and().ignoring().antMatchers(HttpMethod.GET, "/" // Other Stuff You want to ignore
-                );
+        webSecurity.ignoring()
+                        .requestMatchers()
+                                .antMatchers("/api/authenticate");
+        webSecurity.ignoring()
+                .antMatchers("/api/authenticate")
+                .antMatchers(HttpMethod.POST, authenticationPath)
+                .antMatchers(HttpMethod.POST,"/api/authenticate")
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                .antMatchers(HttpMethod.GET, "/");
     }
 
 }

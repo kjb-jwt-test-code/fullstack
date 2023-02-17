@@ -11,10 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Clock;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.impl.DefaultClock;
 
 // Provide JWT Utilities to encrypt and decrypt JWT tokens.
 @Component
@@ -22,7 +20,6 @@ public class JwtTokenUtil implements Serializable {
     static final String CLAIM_KEY_USERNAME = "sub"; // 토큰 제목 (subject)
     static final String CLAIM_KEY_CREATED = "iat"; // 토큰이 발급된 시간 (issued at), 이 값을 사용하여 토큰의 age 가 얼마나 되었는지 판단 할 수 있습니다.
     private static final long serialVersionUID = -3301605591108950415L;
-    private Clock clock = DefaultClock.INSTANCE;
 
     @Value("${jwt.signing.key.secret}")
     private String secret;
@@ -56,7 +53,7 @@ public class JwtTokenUtil implements Serializable {
 
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(clock.now());
+        return expiration.before(new Date());
     }
 
     private Boolean ignoreTokenExpiration(String token) {
@@ -70,7 +67,7 @@ public class JwtTokenUtil implements Serializable {
     }
 
     private String doGenerateToken(Map<String, Object> claims, String subject) {
-        final Date createdDate = clock.now();
+        final Date createdDate = new Date();
         final Date expirationDate = calculateExpirationDate(createdDate);
 
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(createdDate)
@@ -83,7 +80,7 @@ public class JwtTokenUtil implements Serializable {
 
     // 토큰 유효기간 갱신
     public String refreshToken(String token) {
-        final Date createdDate = clock.now();
+        final Date createdDate = new Date();
         final Date expirationDate = calculateExpirationDate(createdDate);
         final Claims claims = getAllClaimsFromToken(token);
         claims.setIssuedAt(createdDate);

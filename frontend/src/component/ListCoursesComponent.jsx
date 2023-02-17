@@ -12,6 +12,7 @@ export default function ListCoursesComponent(props) {
     const refreshCourses = useCallback(() => {
         CourseDataService.retrieveAllCourses('hch0821').then(
             response => {
+                console.log('response')
                 console.log(response);
                 setCourses(response.data.courses);
                 setUser(response.data.user);
